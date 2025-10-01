@@ -1,7 +1,6 @@
 # OSPF - Mininet / Quagga
 
-[English](https://www.google.com/search?q=%23english) | [Português](https://www.google.com/search?q=%23portugu%C3%AAs)
-
+[English](#english) | [Português](#português)
 -----
 
 \<a name="português"\>\</a\>
