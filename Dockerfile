@@ -14,6 +14,7 @@ RUN apt-get update && \
   lsb-release \
   iputils-ping \
   traceroute \
+  iperf \
   quagga \
   quagga-doc \
   nano && \
