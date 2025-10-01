@@ -59,11 +59,11 @@ def start_network():
         config_dir = os.path.abspath(f'./quagga_configs/{r.name}')
         
         # Inicia o daemon zebra, responsável pela tabela de roteamento do kernel
-        r.cmd(f'/usr/lib/quagga/zebra -d -f {config_dir}/zebra.conf -z /tmp/zebra_{r.name}.api -i /tmp/zebra_{r.name}.pid')
+        r.cmd(f'/usr/sbin/zebra -d -f {config_dir}/zebra.conf -z /tmp/zebra_{r.name}.api -i /tmp/zebra_{r.name}.pid')
         time.sleep(1)
 
         # Inicia o daemon OSPF
-        r.cmd(f'/usr/lib/quagga/ospfd -d -f {config_dir}/ospfd.conf -z /tmp/zebra_{r.name}.api -i /tmp/ospfd_{r.name}.pid')
+        r.cmd(f'/usr/sbin/ospfd -d -f {config_dir}/ospfd.conf -z /tmp/zebra_{r.name}.api -i /tmp/ospfd_{r.name}.pid')
 
     print("\n*** Rede pronta com Quagga OSPF. Daemons estão convergindo.")
     print("*** Verifique /tmp/rX-*.log nos roteadores para a saída dos daemons.")
