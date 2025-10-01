@@ -71,6 +71,9 @@ def start_network():
     # --- Métricas ---
     convergence_metric(net, start_time)
     qos_metric(pc1, pc2)
+    routing_table_metric(routers)
+    path_analysis_metric(pc1, pc2)
+    quagga_overhead_metric(routers, start_time)
     # ----------------
 
     print("\n*** Rede pronta com Quagga OSPF. Daemons estão convergindo.")
@@ -157,6 +160,75 @@ def qos_metric(pc1, pc2):
     
     # Para o servidor iperf em pc2
     pc2.cmd('kill %iperf')
+
+def routing_table_metric(routers):
+    """
+    Mede o tamanho da tabela de roteamento de cada roteador e exibe um resumo.
+    """
+    print("\n*** Coletando métricas de tabela de roteamento...")
+
+    total_routes = 0
+    routing_table_details = ""
+    for r in routers:
+        # O comando 'ip route' lista as rotas, e 'wc -l' conta as linhas.
+        route_count_str = r.cmd('ip route | grep -e "link" -e "via" | wc -l').strip()
+        
+        route_count = int(route_count_str)
+        total_routes += route_count
+        routing_table_details += f"    - Roteador {r.name}: {route_count} rotas\n"
+
+    # Cria a string formatada para o log
+    formatted_result = (
+        f"\n"
+        f"{routing_table_details}"
+        f"    - Total na rede: {total_routes} rotas\n"
+    )
+    print(f"--- METRIC_ROUTING_TABLE_START ---\n{formatted_result}\n--- METRIC_ROUTING_TABLE_END ---")
+
+def path_analysis_metric(pc1, pc2):
+    """
+    Executa um traceroute para visualizar o caminho entre dois hosts.
+    """
+    print("\n*** Analisando a rota de pc1 para pc2 com traceroute...")
+    
+    # O '-n' evita a resolução de nomes, tornando o comando mais rápido.
+    traceroute_output = pc1.cmd(f'traceroute -n {pc2.IP()}')
+    
+    formatted_result = f"\n{traceroute_output}\n"
+    
+    print(f"--- METRIC_PATH_ANALYSIS_START ---\n{formatted_result}\n--- METRIC_PATH_ANALYSIS_END ---")
+
+def quagga_overhead_metric(routers, start_time):
+    """
+    Analisa os logs do Quagga OSPF para resumir o overhead do protocolo.
+    """
+    print("\n*** Analisando o overhead do protocolo (Quagga OSPF)...")
+    
+    lsa_originations = 0
+
+    for r in routers:
+        # Aponta para o nome do arquivo de log do Quagga
+        log_file = f"/tmp/{r.name}-ospfd.log"
+        try:
+            with open(log_file, 'r') as f:
+                for line in f:
+                    # Procura pela string que indica a criação de um novo LSA
+                    if "scheduling new router-LSA origination" in line:
+                        lsa_originations += 1
+        except FileNotFoundError:
+            print(f"    - AVISO: Arquivo de log {log_file} não encontrado.")
+
+    end_time = time.time()
+    time_spent = end_time - start_time
+
+    # Formata o resultado, indicando que os HELLOs não podem ser contados a partir deste log
+    formatted_result = (
+        f"\n"
+        f"      Tempo total: {time_spent:.2f}\n"
+        f"      Total gerado de LSA: {lsa_originations}\n"
+        f"      Total gerado de HELLO: Não contável pelos logs disponibilizados pelo Quagga\n"
+    )
+    print(f"--- METRIC_PROTOCOL_OVERHEAD_START ---\n{formatted_result}\n--- METRIC_PROTOCOL_OVERHEAD_END ---")
 
 if __name__ == "__main__":
     setLogLevel("info")
