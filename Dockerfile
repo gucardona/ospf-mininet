@@ -13,6 +13,7 @@ RUN apt-get update && \
   sudo \
   lsb-release \
   iputils-ping \
+  traceroute \
   quagga \
   quagga-doc \
   nano && \
