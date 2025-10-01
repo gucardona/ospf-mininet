@@ -3,8 +3,6 @@
 [English](#english) | [Português](#português)
 -----
 
-\<a name="português"\>\</a\>
-
 ## Português
 
 ### Visão Geral
